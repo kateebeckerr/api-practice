@@ -1,0 +1,151 @@
+---
+title: "hydrological_data"
+format: html
+editor: visual
+---
+
+## Hydrological Data
+
+```{r}
+install.packages("dataRetrieval")
+install.packages("purrr")
+library(dataRetrieval)
+library(ggplot2)
+library(tidyverse)
+
+```
+
+```{r}
+#Ventura River
+
+siteNumber <- "11118500"
+parameterCd <- "00060"
+startDate <- "2023-08-19"
+endDate <- "2023-08-22"
+
+discharge <- readNWISdv(siteNumber, parameterCd, startDate, endDate)
+```
+
+-   Plot the time-series usgin `ggplot2`
+
+```{r}
+
+ggplot(data = discharge, aes(x = Date, y = X_00060_00003)) +
+  geom_line()
+```
+
+-   What was the maximum discharge during this period of time?
+
+August 21st
+
+How would you try to determine when this stream gauge record started - (read the documentation :) ) ?
+
+-   examine documentation, function in package askign for attirbutes of gauge
+
+    ```{r}
+    #siteNumbers <- c("01491000", "01645000")
+    #siteINFO <- readNWISsite(siteNumbers)
+    ```
+
+-   How does the max value compare to the discharge during the storm on 2023-01-09 ?
+
+```{r}
+
+siteNumber <- "11118500"
+parameterCd <- "00060"
+startDate <- "2023-08-19"
+endDate <- "2023-08-22"
+
+discharge <- readNWISdv(siteNumber, parameterCd, startDate, endDate)
+
+
+#replace dates for the storm 
+ggplot(data = discharge, aes(x = Date, y = X_00060_00003)) +
+  geom_line()
+
+
+```
+
+\
+Example 2: Meta jam
+
+Let's determine what percentage of Alaskan household are speaking only English!
+
+The data: https://doi.org/10.5063/F1N58JPP
+
+```{r}
+install.packages("metajam")
+library(metajam)
+
+```
+
+Everytime you run data you re-request code!
+
+```{r}
+
+# set inputs
+data_obj <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A7fc6f6db-c5ea-426a-a743-1f2edafb43b8"
+path <- "~/R"
+# download data and metadata
+download_d1_data(data_obj, path)
+
+```
+
+```{r}
+# R base can do this
+download.file(data_obj, "Alaska_Schools_Rentention2009_15.csv")
+# or even 
+my_data <- read.csv(data_obj)
+
+
+
+```
+
+```{r}
+my_data <- 
+```
+
+```{r}
+url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A7fc6f6db-c5ea-426a-a743-1f2edafb43b8"
+
+#to save it here use . 
+local_path <- "." 
+
+metajam::download_d1_data(url, local_path)
+
+
+```
+
+\^ this command took the full_metadata file and placed it into constructive tables
+
+Read csv into R
+
+```{r}
+
+
+ak_household_data <- metajam::read_d1_files("doi_10.5063_F1N58JPP__household_language__csv/")
+
+```
+
+```{r}
+data <- ak_household_data$data
+View(data)
+```
+
+-   compute the percentage of Alaskan household speaking only English from 2009 to 2015
+
+1.  Create a plot to visualize this data
+
+```{r}
+data_percent <- data %>%
+  mutate(english_only_percent = speak_only_english/total) %>%
+  filter(Year %in% c(2009:2015)) %>%
+  group_by(Year) %>%
+  summarise(english_only_percent = mean(english_only_percent, na.rm = TRUE))
+
+```
+
+```{r}
+ggplot(data = data_percent, aes(x = Year, y = english_only_percent )) +
+  geom_line()
+```
